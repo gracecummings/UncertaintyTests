@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import boost_histogram as bh
 import histbook as hb
+#import pickle
 import glob
 #from histbook import *
 
@@ -36,13 +37,25 @@ if __name__=='__main__':
     boosthtest = bh.Histogram(bh.axis.Regular(bins=55,start=250,stop=800),storage=bh.storage.Weight())
     boosthtest.fill(fdf['ZCandidate_pt'],weight=fdf['event_weight'])
     npboost = boosthtest.view()
+    npboostvar = npboost.variance
+    npboosterr = np.sqrt(npboostvar)
     npboostbins,npboostedges = boosthtest.to_numpy()
     print("This is the boost histogram histogram")
-    print(boosthtest)
-    #print(npboost)
-    print(npboostbins)
+    #print(boosthtest)
+    print(npboost)
+    print(npboosterr)#returns the same errors are histbook
     #outFile["boostdirect"] = boosthtest#Does not write to a root file with uproot
     #outFile["boosttonumpy"] = npboost2#Does not write to a root file with uproot
-    
+
+    #save one array per file
+    #f = open('test_arrout.npy','wb')
+    #np.save(f,npboosterr)
+
+    #save multiple arrays per file
+    f = open('test_arrout.npz','wb')
+    np.savez(f,errors=npboosterr,variances=npboostvar)#saves to a zipped numpy files with access as keywords
+
+    #can save the whole histogram as a pickle object if we wanted to
+
     
 
