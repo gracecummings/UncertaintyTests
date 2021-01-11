@@ -2,8 +2,10 @@ import uproot4 as up4
 import uproot as up3
 import pandas as pd
 import numpy as np
+import boost_histogram as bh
+import histbook as hb
 import glob
-from histbook import *
+#from histbook import *
 
 if __name__=='__main__':
     inputfiles = glob.glob('samp*.root')
@@ -21,10 +23,26 @@ if __name__=='__main__':
         print("number of passing events ",len(fdf))
 
     #lets make some histograms.
-    hbooktest = Hist(bin("zptest",55,250,800),weight="w")
+    nphtest = np.histogram(fdf['ZCandidate_pt'],bins=55,range=(250,800),weights=fdf['event_weight'])
+    print("This is the numpy histogram")
+    print(nphtest)
+    
+    hbooktest = hb.Hist(hb.bin("zptest",55,250,800),weight="w")
     hbooktest.fill(zptest=fdf['ZCandidate_pt'],w=fdf['event_weight'])
-    print(hbooktest.pandas())
-
-    #Saving histbook hists to root files does not work.
+    print("This is the histbook histogram")
+    print(hbooktest.pandas())#the errors calculated are sumw2 errors
+    #outFile["histbook"] = hbooktest#Does not write to a root file with uproot
+    
+    boosthtest = bh.Histogram(bh.axis.Regular(bins=55,start=250,stop=800),storage=bh.storage.Weight())
+    boosthtest.fill(fdf['ZCandidate_pt'],weight=fdf['event_weight'])
+    npboost = boosthtest.view()
+    npboostbins,npboostedges = boosthtest.to_numpy()
+    print("This is the boost histogram histogram")
+    print(boosthtest)
+    #print(npboost)
+    print(npboostbins)
+    #outFile["boostdirect"] = boosthtest#Does not write to a root file with uproot
+    #outFile["boosttonumpy"] = npboost2#Does not write to a root file with uproot
+    
     
 
